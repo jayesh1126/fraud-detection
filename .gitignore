@@ -1,0 +1,45 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# ---- uv / virtualenv ----
+.venv/
+venv/
+# NOTE: keep uv.lock TRACKED (do not ignore it) — it pins your exact deps
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ---- Data & models (large / regenerable — don't commit) ----
+data/
+!data/.gitkeep
+models/
+*.csv
+*.parquet
+*.pkl
+*.joblib
+*.h5
+
+# ---- Secrets / credentials ----
+.env
+*.env
+kaggle.json
+.kaggle/
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- Streamlit ----
+.streamlit/secrets.toml
+
+CLAUDE.md

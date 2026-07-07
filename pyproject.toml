@@ -1,0 +1,20 @@
+[project]
+name = "fraud-detection"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "imbalanced-learn>=0.14.2",
+    "jupyter>=1.1.1",
+    "kaggle>=2.2.3",
+    "llvmlite>=0.43",
+    "matplotlib>=3.11.0",
+    "numba>=0.60",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "scikit-learn>=1.9.0",
+    "shap>=0.50.0",
+    "streamlit>=1.59.0",
+    "xgboost>=3.3.0",
+]
