@@ -48,6 +48,7 @@ evaluated two ways — and the difference is the first finding:
 | Imbalance comparison, 3k budget (val) | 0.557 / 0.525 / 0.560 | 44.9% / 42.0% / 44.6% @ budget | control / weighted / SMOTE — rebalancing added no skill (nb 03) |
 | Feature engineering (val) | 0.577 | 39% @ 0.5 | categoricals +0.017; time +0.003; per-card amounts −0.007 (rejected) — nb 04 |
 | Calibration check (val) | 0.577 | — | raw scores near-calibrated (Brier 0.0237 vs 0.0375 naive); Platt/isotonic ≤1% gain — shipped raw (nb 05) |
+| SHAP layer (val) | 0.577 | — | exact per-claim waterfalls; top global feature is raw time → drift mechanism found (nb 06) |
 
 
 Key findings so far:
@@ -73,6 +74,12 @@ Key findings so far:
   (Platt/isotonic) was tested and rejected as unnecessary — raw log-loss training on the
   true distribution already yields honest probabilities (unlike the 5×-inflated weighted
   model from the imbalance comparison).
+- **SHAP found the drift mechanism**: the model's strongest global feature was raw calendar
+  time — in-window memorization, not fraud knowledge. Explainability doubled as model
+  debugging.
+- **Explanations surfaced a linked fraud burst**: near-identical SHAP signatures (same
+  device, amount, email domain) flagged separate claims as one actor.
+
 
 
 Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
@@ -86,7 +93,7 @@ Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 - [x] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
 - [x] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [x] Probability calibration (Platt / isotonic) + reliability diagram
-- [ ] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
+- [X] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [ ] Written comparison report (PR curves, cost-based eval)
 - [ ] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
 - [ ] Optional Streamlit UI over the API
