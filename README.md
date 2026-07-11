@@ -45,8 +45,8 @@ evaluated two ways — and the difference is the first finding:
 | Random 80/20 split | 0.693 | 47.8% | **inflated — leaks future information** |
 | Temporal split (near future / val) | **0.557** | 38.5% | the honest number |
 | Temporal split (far future / test) | 0.448 | 32.7% | **concept drift: the model decays with time** |
-| Imbalance comparison @ equal budget (val) | control 44.9% · weighted 42.0% · SMOTE 44.6% recall | rebalancing added no skill; see notebook 03 |
-
+| Imbalance comparison, 3k budget (val) | 0.557 / 0.525 / 0.560 | 44.9% / 42.0% / 44.6% @ budget | control / weighted / SMOTE — rebalancing added no skill (nb 03) |
+| Feature engineering (val) | 0.577 | 39% @ 0.5 | categoricals +0.017; time +0.003; per-card amounts −0.007 (rejected) — nb 04 |
 
 
 Key findings so far:
@@ -65,8 +65,12 @@ Key findings so far:
   the untreated baseline on PR-AUC; they mostly relocate the decision threshold. The same
   SMOTE applied *before* the split scores a fake 0.998 — the classic leakage bug, reproduced
   and documented in notebook 03.
+- **Features, not rebalancing, moved the needle** — restoring the 31 discarded categorical
+  columns beat every imbalance technique combined (+0.017 PR-AUC). A rejected feature
+  family (noisy per-card statistics) is documented in notebook 04.
 
-Current benchmark to beat: **PR-AUC 0.557** (temporal validation).
+
+Current benchmark to beat: **PR-AUC 0.577** (temporal validation  + features).
 
 ## Roadmap
 
@@ -75,7 +79,7 @@ Current benchmark to beat: **PR-AUC 0.557** (temporal validation).
 - [x] Threshold-moving + cost-sensitive operating-point analysis
 - [x] Temporal evaluation harness (train/val/test split by time — no future leakage)
 - [x] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
-- [ ] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
+- [x] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [ ] Probability calibration (Platt / isotonic) + reliability diagram
 - [ ] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [ ] Written comparison report (PR curves, cost-based eval)
