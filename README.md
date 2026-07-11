@@ -5,7 +5,8 @@ suspicious transaction it produces a fraud probability *and* a human-readable re
 (via SHAP) that an investigator or regulator can act on.
 
 > **Status:** 🚧 in progress — baseline model and imbalance analysis complete;
-> explainability layer, calibration, and demo app in development.
+> next up: leakage-aware temporal evaluation, imbalance comparison, SHAP, calibration,
+> and a FastAPI inference service.
 > This is project 1 of a 3-part insurance-ML portfolio.
 
 ---
@@ -55,17 +56,20 @@ which is the next step.
 - [x] Data pipeline: IEEE-CIS transaction/identity merge (left join, missingness kept)
 - [x] Naive XGBoost baseline + honest evaluation (PR-AUC, confusion matrix)
 - [x] Threshold-moving + cost-sensitive operating-point analysis
+- [ ] Temporal evaluation harness (train/val/test split by time — no future leakage)
 - [ ] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
+- [ ] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [ ] Probability calibration (Platt / isotonic) + reliability diagram
 - [ ] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [ ] Written comparison report (PR curves, cost-based eval)
-- [ ] Streamlit demo — pick a claim, see its SHAP-explained score
+- [ ] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
+- [ ] Optional Streamlit UI over the API
 - [ ] Port pipeline to a second, insurance-shaped dataset
 
 ## Tech stack
 
 `Python 3.12` · `uv` · `pandas` · `scikit-learn` · `XGBoost` · `imbalanced-learn` ·
-`SHAP` · `matplotlib` · `Streamlit`
+`SHAP` · `matplotlib` · `FastAPI` · `Streamlit (optional UI)`
 
 ## Setup
 
@@ -93,6 +97,9 @@ uv run kaggle competitions download -c ieee-fraud-detection -p data/raw
 data/          # gitignored — raw + processed Kaggle data
 notebooks/     # exploration + modelling narrative
 src/           # pipeline modules (grown as code solidifies)
+api/           # FastAPI inference service (planned)
+models/        # persisted model artifacts (gitignored)
+reports/       # PR curves, comparison report
 README.md
 ```
 
