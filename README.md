@@ -47,6 +47,7 @@ evaluated two ways — and the difference is the first finding:
 | Temporal split (far future / test) | 0.448 | 32.7% | **concept drift: the model decays with time** |
 | Imbalance comparison, 3k budget (val) | 0.557 / 0.525 / 0.560 | 44.9% / 42.0% / 44.6% @ budget | control / weighted / SMOTE — rebalancing added no skill (nb 03) |
 | Feature engineering (val) | 0.577 | 39% @ 0.5 | categoricals +0.017; time +0.003; per-card amounts −0.007 (rejected) — nb 04 |
+| Calibration check (val) | 0.577 | — | raw scores near-calibrated (Brier 0.0237 vs 0.0375 naive); Platt/isotonic ≤1% gain — shipped raw (nb 05) |
 
 
 Key findings so far:
@@ -68,9 +69,13 @@ Key findings so far:
 - **Features, not rebalancing, moved the needle** — restoring the 31 discarded categorical
   columns beat every imbalance technique combined (+0.017 PR-AUC). A rejected feature
   family (noisy per-card statistics) is documented in notebook 04.
+- **Scores are verified probabilities.** Reliability diagram is near-diagonal; calibration
+  (Platt/isotonic) was tested and rejected as unnecessary — raw log-loss training on the
+  true distribution already yields honest probabilities (unlike the 5×-inflated weighted
+  model from the imbalance comparison).
 
 
-Current benchmark to beat: **PR-AUC 0.577** (temporal validation  + features).
+Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 
 ## Roadmap
 
@@ -80,7 +85,7 @@ Current benchmark to beat: **PR-AUC 0.577** (temporal validation  + features).
 - [x] Temporal evaluation harness (train/val/test split by time — no future leakage)
 - [x] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
 - [x] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
-- [ ] Probability calibration (Platt / isotonic) + reliability diagram
+- [x] Probability calibration (Platt / isotonic) + reliability diagram
 - [ ] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [ ] Written comparison report (PR curves, cost-based eval)
 - [ ] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
