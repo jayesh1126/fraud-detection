@@ -45,6 +45,9 @@ evaluated two ways — and the difference is the first finding:
 | Random 80/20 split | 0.693 | 47.8% | **inflated — leaks future information** |
 | Temporal split (near future / val) | **0.557** | 38.5% | the honest number |
 | Temporal split (far future / test) | 0.448 | 32.7% | **concept drift: the model decays with time** |
+| Imbalance comparison @ equal budget (val) | control 44.9% · weighted 42.0% · SMOTE 44.6% recall | rebalancing added no skill; see notebook 03 |
+
+
 
 Key findings so far:
 
@@ -58,6 +61,10 @@ Key findings so far:
 - Accuracy is meaningless here (a "flag nothing" model scores 96.5%), and a flat
   100:1 cost model produces a degenerate "flag everything" optimum — the threshold is
   a capacity/cost decision, not a statistical constant.
+- **Rebalancing ≠ knowledge.** Class weighting and (correctly applied) SMOTE failed to beat
+  the untreated baseline on PR-AUC; they mostly relocate the decision threshold. The same
+  SMOTE applied *before* the split scores a fake 0.998 — the classic leakage bug, reproduced
+  and documented in notebook 03.
 
 Current benchmark to beat: **PR-AUC 0.557** (temporal validation).
 
@@ -67,7 +74,7 @@ Current benchmark to beat: **PR-AUC 0.557** (temporal validation).
 - [x] Naive XGBoost baseline + honest evaluation (PR-AUC, confusion matrix)
 - [x] Threshold-moving + cost-sensitive operating-point analysis
 - [x] Temporal evaluation harness (train/val/test split by time — no future leakage)
-- [ ] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
+- [x] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
 - [ ] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [ ] Probability calibration (Platt / isotonic) + reliability diagram
 - [ ] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
