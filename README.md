@@ -35,28 +35,38 @@ Two coupled problems:
 
 ## Results so far
 
-Baseline: **default XGBoost, numeric features only, no imbalance handling** — deliberately
-naive, to establish a floor.
+## Results so far
 
-| Metric | Value | Note |
-|---|---|---|
-| Accuracy | 97.96% | vs **96.50%** for "always legit" → +1.5pt for all that ML |
-| ROC-AUC | 0.936 | flattered by the easy majority class |
-| **PR-AUC** | **0.693** | the honest metric |
-| Recall @ 0.5 threshold | 47.8% | **misses over half the fraud** |
-| Precision @ 0.5 | 88.6% | cautious: only flags when very sure |
+**Naive baseline** (default XGBoost, numeric features only, no imbalance handling),
+evaluated two ways — and the difference is the first finding:
 
-Threshold-moving + cost-sensitive analysis shows recall of 48% was a *choice* baked into
-the 0.5 cutoff: within a realistic review budget (~3,000 claims) the same model reaches
-**~56% recall at ~80% precision**. Lifting the curve further requires better training —
-which is the next step.
+| Evaluation | PR-AUC | Recall @ 0.5 | Note |
+|---|---|---|---|
+| Random 80/20 split | 0.693 | 47.8% | **inflated — leaks future information** |
+| Temporal split (near future / val) | **0.557** | 38.5% | the honest number |
+| Temporal split (far future / test) | 0.448 | 32.7% | **concept drift: the model decays with time** |
+
+Key findings so far:
+
+- **~0.14 of the baseline PR-AUC was leakage.** A random split lets the model train on
+  the future; a time-ordered split removes the subsidy. (ROC-AUC hides most of this:
+  0.936 → 0.905.)
+- **Fraud models age.** Two months further into the future costs another ~0.11 PR-AUC —
+  in production this model needs rolling retraining and drift monitoring.
+- **Operating points are perishable.** A 3,000-claim review-budget threshold tuned on
+  the validation window catches 45% of fraud there, but only 37% in the test window.
+- Accuracy is meaningless here (a "flag nothing" model scores 96.5%), and a flat
+  100:1 cost model produces a degenerate "flag everything" optimum — the threshold is
+  a capacity/cost decision, not a statistical constant.
+
+Current benchmark to beat: **PR-AUC 0.557** (temporal validation).
 
 ## Roadmap
 
 - [x] Data pipeline: IEEE-CIS transaction/identity merge (left join, missingness kept)
 - [x] Naive XGBoost baseline + honest evaluation (PR-AUC, confusion matrix)
 - [x] Threshold-moving + cost-sensitive operating-point analysis
-- [ ] Temporal evaluation harness (train/val/test split by time — no future leakage)
+- [x] Temporal evaluation harness (train/val/test split by time — no future leakage)
 - [ ] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
 - [ ] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [ ] Probability calibration (Platt / isotonic) + reliability diagram
