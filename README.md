@@ -4,10 +4,10 @@ A fraud-triage system that doesn't just score claims — it **explains** them. F
 suspicious transaction it produces a fraud probability *and* a human-readable reason
 (via SHAP) that an investigator or regulator can act on.
 
-> **Status:** 🚧 in progress — baseline model and imbalance analysis complete;
-> next up: leakage-aware temporal evaluation, imbalance comparison, SHAP, calibration,
-> and a FastAPI inference service.
-> This is project 1 of a 3-part insurance-ML portfolio.
+> **Status:** 🚧 ML core complete — temporal evaluation, imbalance comparison, feature
+> engineering, calibration check, and SHAP explanations all done and written up in
+> [reports/comparison-report.md](reports/comparison-report.md).
+> Next: FastAPI inference service. Project 1 of a 3-part insurance-ML portfolio.
 
 ---
 
@@ -31,9 +31,8 @@ Two coupled problems:
 - **Asymmetric costs.** A missed fraud (full payout lost) is far more expensive than a
   false alarm (wasted investigator time), so the decision threshold is a *cost* decision.
 - **Trust before explanation.** A confident explanation of a badly-calibrated score is
-  just a convincing lie — hence explicit probability calibration.
+  just a convincing lie — hence calibration is explicitly verified (and was not needed).
 
-## Results so far
 
 ## Results so far
 
@@ -48,7 +47,7 @@ evaluated two ways — and the difference is the first finding:
 | Imbalance comparison, 3k budget (val) | 0.557 / 0.525 / 0.560 | 44.9% / 42.0% / 44.6% @ budget | control / weighted / SMOTE — rebalancing added no skill (nb 03) |
 | Feature engineering (val) | 0.577 | 39% @ 0.5 | categoricals +0.017; time +0.003; per-card amounts −0.007 (rejected) — nb 04 |
 | Calibration check (val) | 0.577 | — | raw scores near-calibrated (Brier 0.0237 vs 0.0375 naive); Platt/isotonic ≤1% gain — shipped raw (nb 05) |
-| SHAP layer (val) | 0.577 | — | exact per-claim waterfalls; top global feature is raw time → drift mechanism found (nb 06) |
+| SHAP layer (val) | 0.577 | — | exact per-claim waterfalls; raw-time top feature tested & retained; fraud ring surfaced (nb 06) |
 
 
 Key findings so far:
@@ -74,13 +73,12 @@ Key findings so far:
   (Platt/isotonic) was tested and rejected as unnecessary — raw log-loss training on the
   true distribution already yields honest probabilities (unlike the 5×-inflated weighted
   model from the imbalance comparison).
-- **SHAP found the drift mechanism**: the model's strongest global feature was raw calendar
-  time — in-window memorization, not fraud knowledge. Explainability doubled as model
-  debugging.
+- **SHAP flagged the model's top feature as raw calendar time — so we put it on trial.**
+  The removal experiment kept it: the model is better with it in both the near and far
+  halves of validation. Suspicion tested, refuted, documented (nb 06).
 - **Explanations surfaced a linked fraud burst**: near-identical SHAP signatures (same
-  device, amount, email domain) flagged separate claims as one actor.
-
-
+  device, amount, email domain) tied separate claims to one actor — 6 matching claims,
+  100% fraud.
 
 Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 
@@ -94,7 +92,7 @@ Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 - [x] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [x] Probability calibration (Platt / isotonic) + reliability diagram
 - [X] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
-- [ ] Written comparison report (PR curves, cost-based eval)
+- [x] Written comparison report (PR curves, cost-based eval)
 - [ ] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
 - [ ] Optional Streamlit UI over the API
 - [ ] Port pipeline to a second, insurance-shaped dataset
