@@ -4,10 +4,11 @@ A fraud-triage system that doesn't just score claims — it **explains** them. F
 suspicious transaction it produces a fraud probability *and* a human-readable reason
 (via SHAP) that an investigator or regulator can act on.
 
-> **Status:** 🚧 ML core complete — temporal evaluation, imbalance comparison, feature
-> engineering, calibration check, and SHAP explanations all done and written up in
-> [reports/comparison-report.md](reports/comparison-report.md).
-> Next: FastAPI inference service. Project 1 of a 3-part insurance-ML portfolio.
+> **Status:** 🚧 ML core + inference API complete — temporal evaluation, imbalance
+> comparison, feature engineering, calibration check, SHAP explanations
+> ([full write-up](reports/comparison-report.md)), and a FastAPI scoring service.
+> Next: Streamlit UI, then port to an insurance-shaped dataset.
+> Project 1 of a 3-part insurance-ML portfolio.
 
 ---
 
@@ -93,7 +94,7 @@ Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 - [x] Probability calibration (Platt / isotonic) + reliability diagram
 - [X] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [x] Written comparison report (PR curves, cost-based eval)
-- [ ] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
+- [x] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
 - [ ] Optional Streamlit UI over the API
 - [ ] Port pipeline to a second, insurance-shaped dataset
 
@@ -112,6 +113,51 @@ uv sync
 uv run jupyter lab
 ```
 
+## Inference API
+
+Score a claim and get the explanation in one call:
+
+```bash
+# 1. Build serving artifacts — trains on the train window, verifies val PR-AUC,
+#    persists model + category vocabulary + threshold to models/ (~2 min)
+uv run python src/pipeline.py
+
+# 2. Start the service
+uv run uvicorn api.main:app
+
+# 3. Interactive docs
+#    http://127.0.0.1:8000/docs
+```
+
+| Endpoint | What it does |
+|---|---|
+| `POST /score` | Score a claim from any subset of its features → `{fraud_score, decision, top_reasons}` |
+| `GET /demo_score/{id}` | Score one of 500 stored held-out claims (includes the true label, demo only) |
+| `GET /demo_claims` | List the stored demo claims |
+| `GET /health` | Liveness + artifact check |
+
+Example response (`POST /score`, partial claim):
+
+```json
+{
+  "fraud_score": 0.178,
+  "decision": "clear",
+  "threshold": 0.3107,
+  "top_reasons": [
+    {"feature": "TransactionAmt", "value": "350",
+     "contribution_logodds": 1.27, "direction": "toward fraud"},
+    {"feature": "C13", "value": null,
+     "contribution_logodds": -1.74, "direction": "toward legit"}
+  ]
+}
+```
+
+Design notes: the service never fits anything — it loads artifacts produced by
+`pipeline.py` (model, category vocabulary, validation-tuned threshold), so serving
+matches training by construction. Missing fields become `NaN` (XGBoost handles them
+natively; absence is itself signal). Explanations come from XGBoost's built-in
+TreeSHAP (`pred_contribs`) — score and reasons from a single tree pass.
+
 ## Data
 
 The dataset (Kaggle **IEEE-CIS Fraud Detection**) is **not committed** — it's gitignored
@@ -128,7 +174,7 @@ uv run kaggle competitions download -c ieee-fraud-detection -p data/raw
 data/          # gitignored — raw + processed Kaggle data
 notebooks/     # exploration + modelling narrative
 src/           # pipeline modules (grown as code solidifies)
-api/           # FastAPI inference service (planned)
+api/           # FastAPI inference service (main.py)
 models/        # persisted model artifacts (gitignored)
 reports/       # PR curves, comparison report
 README.md

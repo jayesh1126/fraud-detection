@@ -193,4 +193,8 @@ alone) — retraining cadence and drift monitoring are requirements, not nice-to
 All fitted state (category vocabularies, model, thresholds) is produced on the
 training window only and persisted as artifacts, so serving matches training by
 construction. The scoring service exposes `{fraud_score, decision, top SHAP reasons}`
-per claim. [API section to be completed when the service lands.]
+per claim.
+The scoring service (FastAPI) exposes `POST /score` — any subset of claim fields in,
+`{fraud_score, decision, top SHAP reasons}` out — plus demo endpoints over 500 stored
+held-out claims. Score and explanation come from a single tree pass via XGBoost's
+built-in TreeSHAP.
