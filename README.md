@@ -95,7 +95,7 @@ Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 - [X] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [x] Written comparison report (PR curves, cost-based eval)
 - [x] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
-- [ ] Optional Streamlit UI over the API
+- [x] Optional Streamlit UI over the API
 - [ ] Port pipeline to a second, insurance-shaped dataset
 
 ## Tech stack
@@ -157,6 +157,11 @@ Design notes: the service never fits anything — it loads artifacts produced by
 matches training by construction. Missing fields become `NaN` (XGBoost handles them
 natively; absence is itself signal). Explanations come from XGBoost's built-in
 TreeSHAP (`pred_contribs`) — score and reasons from a single tree pass.
+
+### Demo UI
+
+With the API running: `uv run streamlit run app/ui.py` — pick a held-out claim, see
+its score, decision, and SHAP reasons; or send a partial what-if claim.
 
 ## Data
 
