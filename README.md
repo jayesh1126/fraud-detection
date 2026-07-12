@@ -51,6 +51,7 @@ evaluated two ways — and the difference is the first finding:
 | Feature engineering (val) | 0.577 | 39% @ 0.5 | categoricals +0.017; time +0.003; per-card amounts −0.007 (rejected) — nb 04 |
 | Calibration check (val) | 0.577 | — | raw scores near-calibrated (Brier 0.0237 vs 0.0375 naive); Platt/isotonic ≤1% gain — shipped raw (nb 05) |
 | SHAP layer (val) | 0.577 | — | exact per-claim waterfalls; raw-time top feature tested & retained; fraud ring surfaced (nb 06) |
+| Tuned model: early stopping + regularization (val) | **0.625** | 40% @ 0.5 | lr 0.05, ~1000 trees, depth 8 + subsampling; +0.048 over defaults — nb 07 |
 
 
 Key findings so far:
@@ -83,7 +84,7 @@ Key findings so far:
   device, amount, email domain) tied separate claims to one actor — 6 matching claims,
   100% fraud.
 
-Final model: **PR-AUC 0.577** (temporal validation).
+Current benchmark: **PR-AUC 0.625** (temporal validation; unbiased test-set number pending).
 
 ## Roadmap
 

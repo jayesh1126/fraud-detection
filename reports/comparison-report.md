@@ -124,6 +124,20 @@ Categorical vocabularies are fitted on the training window only; unseen future v
 (6.9% of validation's browser versions) map to "missing". This is both leakage hygiene
 and the exact rule the serving layer applies to next month's claims.
 
+### 4b. Boosting mechanics: the defaults were the biggest leak of performance
+
+Replacing the default configuration (100 trees, learning rate 0.3) with a tuned one
+(lr 0.05, early stopping at ~1,000 rounds, depth 8, min_child_weight 10, row/column
+subsampling 0.8) lifted val PR-AUC 0.577 → **0.625** — a bigger gain than the entire
+feature-engineering effort. The training curves make the mechanics visible: training
+PR-AUC climbs indefinitely (0.90+) while validation plateaus at 0.61 — the gap is
+memorization, and early stopping is the tool that refuses to pay for it. A capacity
+sweep confirmed the classic inverse: shallow trees need ~3.5× more rounds than deep
+ones for the same job. Honest caveat: seven configurations were compared on the
+validation window and the best selected, so 0.625 is mildly selection-flattered —
+the sealed test set provides the unbiased final number (§9).
+
+
 ## 5. Calibration: verified, and deliberately not applied
 
 If scores feed cost decisions and human-facing explanations, 0.8 must mean roughly
