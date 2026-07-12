@@ -113,6 +113,8 @@ Cumulative ablation, each family priced separately:
 | + hour / day-of-week | 0.577 | +0.003 |
 | + per-card amount statistics | 0.570 | **−0.007, rejected** |
 
+(See §4c: rolling-origin CV later showed window noise of ±0.05 — these single-window deltas are directional, not established.)
+
 Restoring the categoricals the baseline had discarded — a single decision — beat every
 imbalance technique combined. Time-of-day added little despite a 5× hourly swing in
 fraud rate: the model could already reach that signal through the raw timestamp.
@@ -137,6 +139,25 @@ ones for the same job. Honest caveat: seven configurations were compared on the
 validation window and the best selected, so 0.625 is mildly selection-flattered —
 the sealed test set provides the unbiased final number (§9).
 
+### 4c. Error bars at last: rolling-origin cross-validation
+
+Four forward-marching temporal folds (validate on windows at 40–50%…70–80% of the
+timeline, always training on everything prior) put error bars under every earlier claim:
+
+| Effect (paired within folds) | Mean ± std | Folds positive |
+|---|---|---|
+| Boosting tuning vs defaults | **+0.069 ± 0.019** | 4/4 |
+| Categorical features vs numeric-only | +0.011 ± 0.013 | 3/4 |
+| Window-to-window variance (tuned model) | 0.641 **± 0.051** | — |
+
+Three revisions follow. First, the single-window ablation table in §4 overstated its
+precision: window noise is ±0.05, so the categorical gain is demoted from "finding" to
+"suggestive"; the time-features and per-card deltas (±0.003–0.007) were never
+distinguishable from noise. Second, the tuning effect survives pairing in every fold —
+it is the one modeling intervention in this project that is unambiguously real. Third,
+the hardest window sat in the *middle* of the data, not the far future: what §2 called
+"concept drift" is partly period difficulty, and honest drift claims need this
+fold-level context.
 
 ## 5. Calibration: verified, and deliberately not applied
 

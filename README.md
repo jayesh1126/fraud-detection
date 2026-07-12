@@ -59,8 +59,10 @@ Key findings so far:
 - **~0.14 of the baseline PR-AUC was leakage.** A random split lets the model train on
   the future; a time-ordered split removes the subsidy. (ROC-AUC hides most of this:
   0.936 → 0.905.)
-- **Fraud models age.** Two months further into the future costs another ~0.11 PR-AUC —
-  in production this model needs rolling retraining and drift monitoring.
+- **Performance is strongly period-dependent (±0.05 PR-AUC across time windows), with a
+  downward tendency at longer horizons** — the case for rolling retraining and drift
+  monitoring stands, but single-window "decay" measurements conflate drift with window
+  difficulty.
 - **Operating points are perishable.** A 3,000-claim review-budget threshold tuned on
   the validation window catches 45% of fraud there, but only 37% in the test window.
 - Accuracy is meaningless here (a "flag nothing" model scores 96.5%), and a flat
@@ -70,9 +72,11 @@ Key findings so far:
   the untreated baseline on PR-AUC; they mostly relocate the decision threshold. The same
   SMOTE applied *before* the split scores a fake 0.998 — the classic leakage bug, reproduced
   and documented in notebook 03.
-- **Features, not rebalancing, moved the needle** — restoring the 31 discarded categorical
-  columns beat every imbalance technique combined (+0.017 PR-AUC). A rejected feature
-  family (noisy per-card statistics) is documented in notebook 04.
+- **What moved the needle, with error bars (rolling-origin CV, 4 folds):** tuning the
+  boosting itself (+0.069 ± 0.019, 4/4 folds — robust) ≫ restoring categorical features
+  (+0.011 ± 0.013, 3/4 folds — suggestive, not established) ≫ every imbalance technique
+  (≈0 or negative). Window-to-window noise is ±0.05: most single-split differences in
+  this project were smaller than the noise they swam in.
 - **Scores are verified probabilities.** Reliability diagram is near-diagonal; calibration
   (Platt/isotonic) was tested and rejected as unnecessary — raw log-loss training on the
   true distribution already yields honest probabilities (unlike the 5×-inflated weighted
@@ -84,7 +88,8 @@ Key findings so far:
   device, amount, email domain) tied separate claims to one actor — 6 matching claims,
   100% fraud.
 
-Current benchmark: **PR-AUC 0.625** (temporal validation; unbiased test-set number pending).
+Current benchmark: **PR-AUC 0.625** on the standard validation window
+(rolling-origin CV: 0.641 ± 0.051 across 4 temporal folds; unbiased test number pending).
 
 ## Roadmap
 
