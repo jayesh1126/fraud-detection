@@ -4,10 +4,12 @@ A fraud-triage system that doesn't just score claims — it **explains** them. F
 suspicious transaction it produces a fraud probability *and* a human-readable reason
 (via SHAP) that an investigator or regulator can act on.
 
-> **Status:** 🚧 ML core + inference API complete — temporal evaluation, imbalance
+![Fraud triage demo UI — claim score, investigate/clear decision, and SHAP reasons](img/Demo.png)
+
+> **Status:** 🚧 ML core + inference API + Streamlit UI complete — temporal evaluation, imbalance
 > comparison, feature engineering, calibration check, SHAP explanations
 > ([full write-up](reports/comparison-report.md)), and a FastAPI scoring service.
-> Next: Streamlit UI, then port to an insurance-shaped dataset.
+> Next: Port to an insurance-shaped dataset.
 > Project 1 of a 3-part insurance-ML portfolio.
 
 ---
@@ -81,7 +83,7 @@ Key findings so far:
   device, amount, email domain) tied separate claims to one actor — 6 matching claims,
   100% fraud.
 
-Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
+Final model: **PR-AUC 0.577** (temporal validation).
 
 ## Roadmap
 
@@ -92,16 +94,16 @@ Current benchmark to beat: **PR-AUC 0.577** (temporal validation).
 - [x] Imbalance handling — compare class weighting, SMOTE (incl. the leakage bug), threshold-moving
 - [x] Feature engineering — categoricals + per-card aggregates (lift the PR curve)
 - [x] Probability calibration (Platt / isotonic) + reliability diagram
-- [X] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
+- [x] SHAP explainability — global summary + per-claim waterfall plots (TreeSHAP)
 - [x] Written comparison report (PR curves, cost-based eval)
 - [x] **FastAPI inference service** — POST a claim → score + decision + SHAP reasons
-- [x] Optional Streamlit UI over the API
+- [x] Streamlit UI over the API
 - [ ] Port pipeline to a second, insurance-shaped dataset
 
 ## Tech stack
 
 `Python 3.12` · `uv` · `pandas` · `scikit-learn` · `XGBoost` · `imbalanced-learn` ·
-`SHAP` · `matplotlib` · `FastAPI` · `Streamlit (optional UI)`
+`SHAP` · `matplotlib` · `FastAPI` · `Streamlit`
 
 ## Setup
 
@@ -177,11 +179,13 @@ uv run kaggle competitions download -c ieee-fraud-detection -p data/raw
 
 ```
 data/          # gitignored — raw + processed Kaggle data
-notebooks/     # exploration + modelling narrative
-src/           # pipeline modules (grown as code solidifies)
+notebooks/     # exploration + modelling narrative (01–06)
+src/           # pipeline modules: data_prep, features, eval_harness, pipeline
 api/           # FastAPI inference service (main.py)
-models/        # persisted model artifacts (gitignored)
-reports/       # PR curves, comparison report
+app/           # Streamlit demo UI (ui.py)
+models/        # persisted model + artifacts (gitignored — run src/pipeline.py)
+reports/       # comparison report + figures
+img/           # screenshots
 README.md
 ```
 
